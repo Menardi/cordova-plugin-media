@@ -341,6 +341,7 @@ public class AudioHandler extends CordovaPlugin {
         AudioPlayer audio = this.players.get(id);
         if (audio != null) {
             audio.pausePlaying();
+            abandonAudioFocus();
         }
     }
 
@@ -352,6 +353,7 @@ public class AudioHandler extends CordovaPlugin {
         AudioPlayer audio = this.players.get(id);
         if (audio != null) {
             audio.stopPlaying();
+            abandonAudioFocus();
         }
     }
 
@@ -428,6 +430,7 @@ public class AudioHandler extends CordovaPlugin {
                     pauseAllLostFocus();
                     break;
                 case (AudioManager.AUDIOFOCUS_GAIN):
+                case (AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK):
                     resumeAllGainedFocus();
                     break;
                 default:
@@ -442,12 +445,17 @@ public class AudioHandler extends CordovaPlugin {
         AudioManager am = (AudioManager) this.cordova.getActivity().getSystemService(Context.AUDIO_SERVICE);
         int result = am.requestAudioFocus(focusChangeListener,
                                           AudioManager.STREAM_MUSIC,
-                                          AudioManager.AUDIOFOCUS_GAIN);
+                                          AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
 
         if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             LOG.e(TAG2,result + " instead of " + AudioManager.AUDIOFOCUS_REQUEST_GRANTED);
         }
 
+    }
+
+    public void abandonAudioFocus() {
+        AudioManager am = (AudioManager) this.cordova.getActivity().getSystemService(Context.AUDIO_SERVICE);
+        am.abandonAudioFocus(focusChangeListener);
     }
 
 
